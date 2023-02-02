@@ -31,7 +31,7 @@ class Submit_UI(QWidget):
     def initUI(self):
         self.setGeometry(300, 300, 400, 600)
         self.setWindowTitle(TITLE)
-        self.setWindowIcon(QtGui.QIcon('jng.png'))
+        self.setWindowIcon(QtGui.QIcon('jng.ico'))
         self.setToolTip(NAME)
         self.img_route = 'background.jpeg'
         self.info_dict = read_js()

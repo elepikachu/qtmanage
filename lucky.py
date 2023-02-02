@@ -20,7 +20,7 @@ class Lucky(QWidget):
     def initUI(self):
         self.setGeometry(300, 300, 400, 150)
         self.setWindowTitle(VERSION)
-        self.setWindowIcon(QtGui.QIcon('jng.png'))
+        self.setWindowIcon(QtGui.QIcon('jng.ico'))
         self.setToolTip(NAME)
         self.img_route = 'background2.jpeg'
         if os.path.exists(self.img_route):
