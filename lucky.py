@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 from PyQt5.QtGui import QFont
 from submit import Submit_UI
+from manage import Manage_UI
 
 
 FONT_12 = QFont('Kaiti TC', 15)
@@ -65,7 +66,8 @@ class Lucky(QWidget):
         self.windows.show()
 
     def manage_mode(self):
-        pass
+        self.windows = Manage_UI()
+        self.windows.show()
 
     def help_window(self):
         self.window2 = Help()
