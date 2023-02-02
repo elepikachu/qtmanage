@@ -1,1 +1,1 @@
-# qtmanage
+# qtmanage v1.0.0 - by elepikachu

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import datetime
 import os
 import json
+import socket
 import pymysql
-from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
+import datetime
 from PyQt5.QtGui import QFont
+from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtWidgets import QWidget, QMessageBox
 
 
 FONT_12 = QFont('Kaiti TC', 15)
@@ -28,6 +29,10 @@ class Submit_UI(QWidget):
         super().__init__()
         self.initUI()
 
+    # -------------------------------------------------------------
+    # 函数名： initUI
+    # 功能： UI初始化
+    # -------------------------------------------------------------
     def initUI(self):
         self.setGeometry(300, 300, 400, 600)
         self.setWindowTitle(TITLE)
@@ -41,19 +46,19 @@ class Submit_UI(QWidget):
         self.helpButton = QtWidgets.QPushButton(self)
         self.helpButton.setGeometry(0, 0, 75, 25)
         self.helpButton.setText("Help")
-        self.helpButton.setToolTip("打开帮助文档")
+        self.helpButton.setToolTip("app help")
         self.helpButton.clicked.connect(self.help_window)
 
         self.configButton = QtWidgets.QPushButton(self)
         self.configButton.setGeometry(72, 0, 75, 25)
         self.configButton.setText("Config")
-        self.configButton.setToolTip("打开配置窗口")
+        self.configButton.setToolTip("do the configuration")
         self.configButton.clicked.connect(self.config_window)
 
         self.exitButton = QtWidgets.QPushButton(self)
         self.exitButton.setGeometry(325, 0, 75, 25)
         self.exitButton.setText("Exit")
-        self.exitButton.setToolTip("关闭程序")
+        self.exitButton.setToolTip("close app")
         self.exitButton.clicked.connect(self.close)
 
         self.titleLabel = QtWidgets.QLabel(self)
@@ -139,6 +144,10 @@ class Submit_UI(QWidget):
         self.outBox.setStyleSheet("background:rgb(255,255,255,0.6)")
         self.show()
 
+    # -------------------------------------------------------------
+    # 函数名： use_palette
+    # 功能： 使用背景
+    # -------------------------------------------------------------
     def use_palette(self, img_route):
         window_pale = QtGui.QPalette()
         pix = QtGui.QPixmap(img_route)
@@ -146,15 +155,27 @@ class Submit_UI(QWidget):
         window_pale.setBrush(QtGui.QPalette.Background, QtGui.QBrush(pix))
         self.setPalette(window_pale)
 
+    # -------------------------------------------------------------
+    # 函数名： help_window
+    # 功能： 打开帮助窗口
+    # -------------------------------------------------------------
     def help_window(self):
         self.window3 = Help()
         self.window3.show_info()
         self.window3.show()
 
+    # -------------------------------------------------------------
+    # 函数名： config_window
+    # 功能： 打开配置窗口
+    # -------------------------------------------------------------
     def config_window(self):
         self.window4 = Config()
         self.window4.show()
 
+    # -------------------------------------------------------------
+    # 函数名： check_result
+    # 功能： 检查输入数据
+    # -------------------------------------------------------------
     def check_result(self):
         global CHECK_FLAG
         if self.get_info() == False:
@@ -173,6 +194,10 @@ class Submit_UI(QWidget):
         self.outBox.setText(self.text)
         CHECK_FLAG = 1
 
+    # -------------------------------------------------------------
+    # 函数名： submit_result
+    # 功能： 提交数据
+    # -------------------------------------------------------------
     def submit_result(self):
         if CHECK_FLAG == 0:
             self.outBox.setText("请先检查后再提交")
@@ -194,8 +219,22 @@ class Submit_UI(QWidget):
             db.commit()
         except Exception as e:
             print(e)
+        cursor.execute('select * from buyitem_itemlog order by id desc limit 1;')
+        maxIdx2 = cursor.fetchone()
+        idx2 = maxIdx2[0] + 1
+        ip = socket.gethostbyname(socket.gethostname())
+        cmd = f"insert into buyitem_itemlog value({idx2}, '{ip}', '{date}', 'insert', '{self.info_dict['姓名']}-{self.info_dict['商品名称']}-false via app');"
+        try:
+            cursor.execute(cmd)
+            db.commit()
+        except Exception as e:
+            print(e)
         self.outBox.setText("submit success, data index is %d" % idx)
 
+    # -------------------------------------------------------------
+    # 函数名： closeEvent
+    # 功能： 关闭时询问
+    # -------------------------------------------------------------
     def closeEvent(self, event):
         reply = QMessageBox.question(self, 'Warning', 'Are you sure to quit', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.Yes:
@@ -203,6 +242,10 @@ class Submit_UI(QWidget):
         else:
             event.ignore()
 
+    # -------------------------------------------------------------
+    # 函数名： get_info
+    # 功能： 获取用户输入信息
+    # -------------------------------------------------------------
     def get_info(self):
         self.info_dict['商品名称'] = self.goodInput.toPlainText()
         self.info_dict['品牌型号'] = self.brandInput.toPlainText()
@@ -220,7 +263,6 @@ class Submit_UI(QWidget):
         return True
 
 
-
 class Help(QWidget):
     def __init__(self):
         super().__init__()
@@ -236,10 +278,14 @@ class Help(QWidget):
         self.titleLabel.setStyleSheet("Color:green")
 
         self.outBox = QtWidgets.QTextBrowser(self)
-        self.outBox.setGeometry(50, 100, 300, 300)
+        self.outBox.setGeometry(50, 100, 300, 400)
         self.outBox.setStyleSheet("background:rgb(255,255,255,0.6)")
         self.show()
 
+    # -------------------------------------------------------------
+    # 函数名： show_info
+    # 功能： 读取帮助信息
+    # -------------------------------------------------------------
     def show_info(self):
         with open(r'Help.txt', 'r', encoding='utf-8') as f:
             text = f.read()
@@ -280,20 +326,34 @@ class Config(QWidget):
         self.successLabel = QtWidgets.QLabel(self)
         self.successLabel.setGeometry(150, 450, 100, 25)
         self.successLabel.setText("config success")
+        self.successLabel.setVisible(False)
 
         self.show()
 
+    # -------------------------------------------------------------
+    # 函数名： config
+    # 功能： 配置完成
+    # -------------------------------------------------------------
     def config(self):
         text = self.outBox.toPlainText().strip()
         with open(CONFIG_PATH, 'w') as f:
             f.write(json.dumps(eval(text), ensure_ascii=False))
+        self.successLabel.setVisible(True)
 
+    # -------------------------------------------------------------
+    # 函数名： reset_config
+    # 功能： 重置配置
+    # -------------------------------------------------------------
     def reset_config(self):
         self.outBox.setText(str(ORIGIN_CONFIG))
         with open(CONFIG_PATH, 'w') as f:
             f.write(json.dumps(ORIGIN_CONFIG, ensure_ascii=False))
 
 
+# -------------------------------------------------------------
+# 函数名： read_js
+# 功能： 读取json数据
+# -------------------------------------------------------------
 def read_js(path=CONFIG_PATH):
     with open(path) as load_f:
         return json.load(load_f)
