@@ -5,7 +5,9 @@ import json
 import socket
 import pymysql
 import datetime
+import requests
 from PyQt5.QtGui import QFont
+from bs4 import BeautifulSoup
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QWidget, QMessageBox
 
@@ -76,8 +78,15 @@ class Submit_UI(QWidget):
         self.goodName.setText('商品名称')
         self.goodName.setGeometry(40, 80, 60, 25)
 
+        self.searchButton = QtWidgets.QPushButton(self)
+        self.searchButton.setGeometry(275, 80, 50, 25)
+        self.searchButton.setText("Search")
+        self.searchButton.setToolTip("Search item on JingDong")
+        self.searchButton.clicked.connect(self.jd_search)
+
         self.goodInput = QtWidgets.QTextEdit(self)
-        self.goodInput.setGeometry(115, 80, 200, 25)
+        self.goodInput.setGeometry(115, 80, 150, 25)
+        self.goodInput.setPlaceholderText('京东商品请先搜索')
         self.goodInput.setStyleSheet("background:rgb(255,255,255,0.6)")
 
         self.brandName = QtWidgets.QLabel(self)
@@ -124,7 +133,7 @@ class Submit_UI(QWidget):
 
         self.otherInput = QtWidgets.QTextEdit(self)
         self.otherInput.setGeometry(115, 200, 200, 25)
-        self.otherInput.setPlaceholderText('京东请填商品编号')
+        self.otherInput.setPlaceholderText('京东商品请填商品编号')
         self.otherInput.setStyleSheet("background:rgb(255,255,255,0.6)")
 
         self.checkButton = QtWidgets.QPushButton(self)
@@ -205,7 +214,7 @@ class Submit_UI(QWidget):
         reply = QMessageBox.question(self, 'Warning', 'Are you sure to submit', QMessageBox.Yes, QMessageBox.No)
         if reply == QMessageBox.No:
             return
-        db = pymysql.connect(host="localhost", port=3306, user="root", password="123456", database="elepikachu")
+        db = pymysql.connect(host="10.122.176.4", port=3306, user="root", password="123456", database="elepikachu")
         cursor = db.cursor()
         cursor.execute('select * from buyitem_item order by id desc limit 1;')
         maxIdx = cursor.fetchone()
@@ -261,6 +270,78 @@ class Submit_UI(QWidget):
             self.outBox.setText("数量为空")
             return False
         return True
+
+    # -------------------------------------------------------------
+    # 函数名： jd_search
+    # 功能： 在京东搜索
+    # -------------------------------------------------------------
+    def jd_search(self):
+        good = self.goodInput.toPlainText()
+        if good is '':
+            self.outBox.setText('empty good name')
+            return
+        res = self.parse_page(good, 1)
+        output = ''
+        for item in res:
+            output += str(item) + '\n'
+        #value, ok = QtWidgets.QInputDialog.getInt(self, "qtmanage", "Search success, result is shown in outputbox\n\nplease input the index of good:", 1, 1, len(res), 1)
+        value, ok = QtWidgets.QInputDialog.getInt(self, "qtmanage",
+                                                  "%s\n\nplease input the index of good:" % (output),
+                                                  1, 1, len(res), 1)
+        if ok:
+            self.goodInput.setText(res[value]['name'])
+            self.brandInput.setText(res[value]['shop'])
+            self.otherInput.setText('商品编号： ' + res[value]['number'])
+            self.outBox.setText('ADD SUCCESS' + str(res[value]))
+
+    # -------------------------------------------------------------
+    # 函数名： get_page
+    # 功能： 爬取页面
+    # -------------------------------------------------------------
+    def get_page(self, url):
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+        }
+        try:
+            html = requests.request("GET", url, headers=headers, timeout=10)
+            html.encoding = "utf-8"
+            return html.text
+        except:
+            print('爬取失败')
+            return "爬取失败"
+
+    # -------------------------------------------------------------
+    # 函数名： parse_page
+    # 功能： 解析爬取页面
+    # -------------------------------------------------------------
+    def parse_page(self, item, page):
+        url = "https://search.jd.com/Search?keyword=%s&page=%s" % (item, page)
+        html = self.get_page(url)
+        html = str(html)
+        if html is not None:
+            soup = BeautifulSoup(html, 'html.parser')
+            li_all = soup.select('#J_goodsList ul .gl-item')
+            res_list = []
+            idx = 1
+            for li in li_all:
+                name = [i.get_text() for i in li.select('.p-name em')][0]
+                price = [i.get_text() for i in li.select('.p-price i')][0]
+                if li.select('.p-shop a'):
+                    shop = [i.get_text() for i in li.select('.p-shop a')][0]
+                elif li.select('.p-shopnum a'):
+                    shop = [i.get_text() for i in li.select('.p-shopnum a')][0]
+                else:
+                    shop = "自营"
+                number = li['data-sku']
+                href = "item.jd.com/%s.html" % number
+                if (len(name) != 0 and len(price) != 0 and len(shop) != 0 and len(number) != 0):
+                    info = {'idx': idx, 'name': name, 'price': price, 'shop': shop, 'number': number, 'href': href}
+                    res_list.append(info)
+                    idx += 1
+            return res_list
+        else:
+            print('error')
+            return None
 
 
 class Help(QWidget):

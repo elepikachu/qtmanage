@@ -1,19 +1,25 @@
 qt mamage system v1.0.0
+
 Please use submit mode to submit your shopping information
 remember to revise config file before using
-in manage mode ,you can:
+you can search on jd after fill good name if you are buying jingdong item
+
+Please use manage mode to do data management. in manage mode ,you can:
 1 revise data line, please still select the line and save change
 2 delete data line, please select the line you want to delete
 (you should refresh the form before and after revise/delete to avoid thread problem)
 3 print form
-4 print log
+4 see log
 
 购物管理系统 1.0.0
+
 请使用提交模式提交信息
 使用前请先修改配置文件
-在管理模式，您可以：
-修改数据行，修改后请仍选中该行并保存修改
-删除数据行，请选中要删除的数据行
+如果购买京东产品，请先填好商品名称后搜索，系统会自动填入
+
+请使用管理模式管理数据，在管理模式，您可以：
+1修改数据行，修改后请仍选中该行并保存修改
+2删除数据行，请选中要删除的数据行
 （在删改前后请刷新表格，避免线程问题）
-打印数据表
-打印日志
+3打印数据表
+4查看日志

@@ -23,7 +23,7 @@ TITLE = 'manage mode'
 # 功能： 连接数据库
 # -------------------------------------------------------------
 def conn_database():
-    db = pymysql.connect(host="localhost", port=3306, user="root", password="123456", database="elepikachu")
+    db = pymysql.connect(host="10.122.176.4", port=3306, user="root", password="123456", database="elepikachu")
     return db
 
 
@@ -202,7 +202,7 @@ class Manage_UI(QWidget):
             idx2 = maxIdx2[0] + 1
             ip = socket.gethostbyname(socket.gethostname())
             date = datetime.datetime.today()
-            cmd = f"insert into buyitem_itemlog value({idx2}, '{ip}', '{date}', 'update', '{upd_d[5]}-{upd_d[5]}-{upd_d[12]}');"
+            cmd = f"insert into buyitem_itemlog value({idx2}, '{ip}', '{date}', 'update', '{upd_d[5]}-{upd_d[5]}-{upd_d[12]} via app');"
             try:
                 cursor.execute(cmd)
                 db.commit()
@@ -236,7 +236,7 @@ class Manage_UI(QWidget):
             idx2 = maxIdx2[0] + 1
             ip = socket.gethostbyname(socket.gethostname())
             date = datetime.datetime.today()
-            cmd = f"insert into buyitem_itemlog value({idx2}, '{ip}', '{date}', 'delete', '{name}-{good}');"
+            cmd = f"insert into buyitem_itemlog value({idx2}, '{ip}', '{date}', 'delete', '{name}-{good} via app');"
             try:
                 cursor.execute(cmd)
                 db.commit()
@@ -263,7 +263,7 @@ class Manage_UI(QWidget):
             idx2 = maxIdx2[0] + 1
             ip = socket.gethostbyname(socket.gethostname())
             date = datetime.datetime.today()
-            cmd = f"insert into buyitem_itemlog value({idx2}, '{ip}', '{date}', 'delete', 'all');"
+            cmd = f"insert into buyitem_itemlog value({idx2}, '{ip}', '{date}', 'delete', 'all via app');"
             try:
                 cursor.execute(cmd)
                 db.commit()
@@ -362,7 +362,19 @@ class Manage_UI(QWidget):
         writer = self.print_excel(writer, '股份-劳动防护用品', '劳动防护', rawdata, office)
         writer = self.print_excel(writer, '股份-实验耗材及小型设备', '实验耗材及小型设备', rawdata, office)
         writer.save()
+        cursor.execute('select * from buyitem_itemlog order by id desc limit 1;')
+        maxIdx2 = cursor.fetchone()
+        idx2 = maxIdx2[0] + 1
+        ip = socket.gethostbyname(socket.gethostname())
+        date = datetime.datetime.today()
+        cmd = f"insert into buyitem_itemlog value({idx2}, '{ip}', '{date}', 'print', 'chart via app');"
+        try:
+            cursor.execute(cmd)
+            db.commit()
+        except Exception as e:
+            print(e)
         self.outputBox.setText('print success, file name is %s' % fname)
+
 
     # -------------------------------------------------------------
     # 函数名： print_excel
@@ -500,8 +512,12 @@ class Log(QWidget):
         db = conn_database()
         cursor = db.cursor()
         cursor.execute("select * from buyitem_itemlog")
-        text = str(cursor.fetchall())
-        self.outBox.setText(text)
+        all_log = cursor.fetchall()
+        for item in all_log:
+            item = list(item)
+            item[2] = datetime.datetime.strftime(item[2], '%Y/%m/%d %H:%M:%S')
+            text = str(item)
+            self.outBox.append(text)
 
 
 # -------------------------------------------------------------
