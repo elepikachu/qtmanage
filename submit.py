@@ -6,6 +6,7 @@ import socket
 import pymysql
 import datetime
 import requests
+from selenium import webdriver
 from PyQt5.QtGui import QFont
 from bs4 import BeautifulSoup
 from PyQt5 import QtWidgets, QtGui
@@ -277,10 +278,10 @@ class Submit_UI(QWidget):
     # -------------------------------------------------------------
     def jd_search(self):
         good = self.goodInput.toPlainText()
-        if good is '':
+        if good == '':
             self.outBox.setText('empty good name')
             return
-        res = self.parse_page(good, 1)
+        res = self.jd_spider(good, 1)
         output = ''
         for item in res:
             output += str(item) + '\n'
@@ -316,6 +317,7 @@ class Submit_UI(QWidget):
     # -------------------------------------------------------------
     def parse_page(self, item, page):
         url = "https://search.jd.com/Search?keyword=%s&page=%s" % (item, page)
+        # url = "https://www.jd.com/"
         html = self.get_page(url)
         html = str(html)
         if html is not None:
@@ -342,6 +344,31 @@ class Submit_UI(QWidget):
         else:
             print('error')
             return None
+
+    # -------------------------------------------------------------
+    # 函数名： jd_spider
+    # 功能： 通过webdriver爬取页面（爬虫寄了）
+    # -------------------------------------------------------------
+    def jd_spider(self, item, page):
+        opt = webdriver.ChromeOptions()
+        opt.add_argument('headless')
+        driver = webdriver.Chrome(options=opt)
+        url = "https://search.jd.com/Search?keyword=%s&page=%s" % (item, page)
+        driver.get(url)
+        li = driver.find_elements_by_class_name('gl-item')  # 查找li标签
+        res_list = []
+        idx = 1
+        for l in li:
+            name = l.find_element_by_css_selector('.p-name').text
+            priz = l.find_element_by_css_selector('.p-price').text
+            shop = l.find_element_by_css_selector('.p-shop').text
+            number = l.get_attribute('data-sku')
+            href = "item.jd.com/%s.html" % number
+            if (len(name) != 0 and len(priz) != 0 and len(shop) != 0 and len(number) != 0):
+                info = {'idx': idx, 'name': name, 'price': priz, 'shop': shop, 'number': number, 'href': href}
+                res_list.append(info)
+                idx += 1
+        return res_list
 
 
 class Help(QWidget):

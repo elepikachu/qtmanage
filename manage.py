@@ -23,7 +23,7 @@ TITLE = 'manage mode'
 # 功能： 连接数据库
 # -------------------------------------------------------------
 def conn_database():
-    db = pymysql.connect(host="10.122.176.4", port=3306, user="root", password="123456", database="elepikachu")
+    db = pymysql.connect(host="10.122.167.40", port=3306, user="root", password="123456", database="elepikachu")
     return db
 
 
@@ -352,7 +352,7 @@ class Manage_UI(QWidget):
         all = cursor.fetchall()
         rawdata = pd.DataFrame(all)
         rawdata.columns = ['序号', '商品名称', '品牌型号', '单位', '数量', '姓名', '电话', '课题编号', '采购说明',
-                           '备注', '11', '12', '13', '14']
+                           '备注', '11', '12', '13', '14', '15']
 
         writer = pd.ExcelWriter(fname, engine='openpyxl')
         writer = self.print_excel(writer, '股份-办公用品采购', '办公用品', rawdata, office)
@@ -383,7 +383,7 @@ class Manage_UI(QWidget):
     def print_excel(self, writer, word, wd, rawdata, of):
         data = rawdata[rawdata['14'] == wd]
         if not data.empty:
-            data = data.drop(['11', '12', '13', '14'], axis=1)
+            data = data.drop(['11', '12', '13', '14', '15'], axis=1)
             data.style.apply(excel_style, axis=0).to_excel(writer, sheet_name=word, index=False, startrow=3)
 
             column_wid = (data.columns.to_series().apply(lambda x: len(x.encode('gbk'))).values)

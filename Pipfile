@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[source]]
+url = "https://pypi.douban.com/simple"
+verify_ssl = true
+name = "pypidouban"
+
+[packages]
+pyinstaller = {version = "*", index = "pypidouban"}
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
