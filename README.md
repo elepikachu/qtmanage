@@ -1,1 +1,1 @@
-# qtmanage v1.0.0 - by elepikachu
+# 物资采购系统APP版本 v1.0.0 - by elepikachu

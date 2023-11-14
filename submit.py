@@ -444,7 +444,7 @@ class Config(QWidget):
     # -------------------------------------------------------------
     def config(self):
         text = self.outBox.toPlainText().strip()
-        with open(CONFIG_PATH, 'w') as f:
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
             f.write(json.dumps(eval(text), ensure_ascii=False))
         self.successLabel.setVisible(True)
 
@@ -454,8 +454,8 @@ class Config(QWidget):
     # -------------------------------------------------------------
     def reset_config(self):
         self.outBox.setText(str(ORIGIN_CONFIG))
-        with open(CONFIG_PATH, 'w') as f:
-            f.write(json.dumps(ORIGIN_CONFIG, ensure_ascii=False))
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+        f.write(json.dumps(ORIGIN_CONFIG, ensure_ascii=False))
 
 
 # -------------------------------------------------------------
@@ -463,5 +463,5 @@ class Config(QWidget):
 # 功能： 读取json数据
 # -------------------------------------------------------------
 def read_js(path=CONFIG_PATH):
-    with open(path) as load_f:
+    with open(path, encoding='utf-8') as load_f:
         return json.load(load_f)

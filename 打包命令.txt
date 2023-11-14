@@ -1,0 +1,1 @@
+pyinstaller -F -w -i jng.ico lucky.py
